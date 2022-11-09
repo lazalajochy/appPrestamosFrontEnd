@@ -1,0 +1,226 @@
+import axios from "axios";
+import React, { useState, useEffect } from "react";
+import {
+    CDBSidebar,
+    CDBSidebarContent,
+    CDBSidebarFooter,
+    CDBSidebarHeader,
+    CDBSidebarMenu,
+    CDBSidebarMenuItem,
+} from 'cdbreact';
+import { useParams, Link, useNavigate } from "react-router-dom";
+import Form from 'react-bootstrap/Form';
+
+
+
+const url = process.env.REACT_APP_API;
+
+const NewCustomer = () => {
+
+    const navigate = useNavigate()
+
+    let { manager_id } = useParams();
+
+    let [manager, setManager] = useState([]);
+
+    useEffect(() => {
+        getManagerData()
+    }, [])
+
+    const getManagerData = async () => {
+        const result = await axios.get(`${url}${manager_id}`)
+        setManager(result.data);
+    }
+
+    let company_name = '', user = '';
+    manager.map((data) => (
+        company_name = data.companyName,
+        user = data.managerEmail
+    ));
+
+
+    let [customerName, setCustomerName] = useState(''), [customerPersonalId, setCustomerPersonalId] = useState(''), [customerPhone, setCustomerPhone] = useState(''),
+        [amount, setAmount] = useState(''), [totalPayment, setTotalPayment] = useState(''), [paymentWeek, setPaymentWeek] = useState(''), [advance, setAdvance] = useState(''),
+        [amountPaid, setAmountPaid] = useState(''), [amountNotPaid, setAmountNotPaid] = useState(''), [weeksPaid, setWeeksPaid] = useState(''), [weeksNotPaid, setWeeksNotPaid] = useState('');
+
+    paymentWeek = (amount / 100) * 10;
+    totalPayment = paymentWeek * 13;
+    amountPaid = paymentWeek * weeksPaid;
+    amountNotPaid = totalPayment - amountPaid;
+    weeksNotPaid = 13 - weeksPaid;
+    /*let y = 0;
+    let x = (advance * 10) / amount
+        let s = weeksPaid
+    y = s + x
+
+    if(y !== 0){
+        weeksPaid = y;
+    }
+    */
+    const saveCustomer = async (e) => {
+        e.preventDefault();
+        await axios.post(`${url}customer/`, {
+            customerName: customerName, customerPersonalId: customerPersonalId, customerPhone: customerPhone, customer_id: manager_id, amount: amount, totalPayment: totalPayment,
+            paymentWeek: paymentWeek, advance: advance, weeksPaid: weeksPaid, weeksNotPaid: weeksNotPaid, amountPaid: amountPaid, amountNotPaid: amountNotPaid
+        },
+            navigate(`/customers/${manager_id}`)
+
+        );
+
+    }
+
+
+
+    return (
+        <div style={{ display: 'flex', overflow: "scroll initial" }}>
+            <CDBSidebar textColor='#fff' backgroundColor='#333'>
+                <CDBSidebarHeader prefix={<i className="fa fa-bars fa-large"></i>}>
+                    <Link to={`/dashboard/${manager_id}`} className="text-decoration-none" style={{ color: 'inherit' }}>
+                        {company_name}
+                    </Link>
+                </CDBSidebarHeader>
+                <CDBSidebarContent className="sidebar-content">
+                    <CDBSidebarMenu>
+                        <a>
+                            <CDBSidebarMenuItem icon="user">{user}</CDBSidebarMenuItem>
+                        </a>
+                        <Link to={`/newCustomer/${manager_id}`}>
+                            <CDBSidebarMenuItem icon="add">Agregar cliente</CDBSidebarMenuItem>
+
+                        </Link>
+                        <Link to={`/customers/${manager_id}`}>
+                            <CDBSidebarMenuItem icon="users">Clientes</CDBSidebarMenuItem>
+
+                        </Link>
+                        <Link to={`/data/${manager_id}`}>
+                            <CDBSidebarMenuItem icon="table">Data</CDBSidebarMenuItem>
+                        </Link>
+                        <Link to={`/inactive/${manager_id}`}>
+                        <CDBSidebarMenuItem icon="history">Historial</CDBSidebarMenuItem>
+
+                        </Link>
+                    </CDBSidebarMenu>
+
+                </CDBSidebarContent>
+                <CDBSidebarFooter style={{ textAlign: 'center' }}>
+                    <div className="sidebar-btn-wrapper" style={{ padding: '20px 5px' }}>
+                        Sidebar Footer
+                    </div>
+                </CDBSidebarFooter>
+
+            </CDBSidebar>
+
+            <div style={{ display: 'block', width: 700, padding: 30 }}>
+                <h1>Agregar nuevo cliente</h1>
+                <Form onSubmit={saveCustomer}>
+                    <Form.Group className="mb-3">
+                        <Form.Label>Nombre completo</Form.Label>
+                        <Form.Control
+                            value={customerName}
+                            onChange={(e) => setCustomerName(e.target.value)}
+                            required
+                        />
+
+                    </Form.Group>
+                    <Form.Group className="mb-3">
+                        <Form.Label>Contacto</Form.Label>
+                        <Form.Control
+                            value={customerPhone}
+                            onChange={(e) => setCustomerPhone(e.target.value)}
+                            required
+                        />
+                    </Form.Group>
+                    <Form.Group className="mb-3">
+                        <Form.Label>Cedula</Form.Label>
+                        <Form.Control
+                            value={customerPersonalId}
+                            onChange={(e) => setCustomerPersonalId(e.target.value)}
+                            required
+                        />
+                    </Form.Group>
+                    <Form.Group>
+                        <Form.Label>Cantidad</Form.Label>
+                        <Form.Control
+                            value={amount}
+                            onChange={(e) => setAmount(e.target.value)}
+                            required
+
+                        />
+                    </Form.Group>
+                    <Form.Group>
+                        <Form.Label>Semanas pagadas</Form.Label>
+                        <Form.Control
+                            value={weeksPaid}
+                            onChange={(e) => setWeeksPaid(e.target.value)}
+                            required
+                        />
+                    </Form.Group>
+                    <Form.Group>
+                        <Form.Label>Pago por semana</Form.Label>
+                        <Form.Control
+                            value={paymentWeek}
+                            onChange={(e) => setPaymentWeek(e.target.value)}
+                            readOnly
+                        />
+                    </Form.Group>
+                    <Form.Group>
+                        <Form.Label>Cantidad pagada</Form.Label>
+                        <Form.Control
+                            value={amountPaid}
+                            onChange={(e) => setAmountPaid(e.target.value)}
+
+                            readOnly
+                        />
+                    </Form.Group>
+                    <Form.Group>
+                        <Form.Label>Cantidad no pagada</Form.Label>
+                        <Form.Control
+                            value={amountNotPaid}
+                            onChange={(e) => setAmountNotPaid(e.target.value)}
+
+                            readOnly
+                        />
+                    </Form.Group>
+                    <Form.Group>
+                        <Form.Label>Semanas no pagadas</Form.Label>
+                        <Form.Control
+                            value={weeksNotPaid}
+                            onChange={(e) => setWeeksNotPaid(e.target.value)}
+
+                            readOnly
+                        />
+                    </Form.Group>
+
+                    <Form.Group className="mb-3">
+                        <Form.Label>Abono</Form.Label>
+                        <Form.Control
+                            value={advance}
+                            onChange={(e) => setAdvance(e.target.value)}
+
+                        />
+                    </Form.Group>
+                    <Form.Group className="mb-3">
+                        <Form.Label>Pago total</Form.Label>
+                        <Form.Control
+                            value={totalPayment}
+                            onChange={(e) => setTotalPayment(e.target.value)}
+                            readOnly
+                        />
+                    </Form.Group>
+                    <Form.Group className="mb-3">
+                        <Form.Control
+                            type="submit"
+                            className="btn btn-primary"
+                        />
+                    </Form.Group>
+                </Form>
+
+            </div>
+
+        </div>
+    )
+
+}
+
+
+export default NewCustomer;
